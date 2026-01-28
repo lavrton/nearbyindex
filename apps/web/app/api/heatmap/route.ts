@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { heatCells } from "@/lib/db/schema";
-import { and, gte, lte, eq } from "drizzle-orm";
+import { and, gte, lte, eq, gt } from "drizzle-orm";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import { findCityForPoint, getCityBounds } from "@/lib/cities/bounds";
 import { scheduleHeatmapJob, getJobById } from "@/lib/jobs/scheduler";
 import { HEATMAP_GRID_STEP } from "@/lib/constants";
+
+// Minimum score to return (cells below this are transparent on frontend anyway)
+const MIN_VISIBLE_SCORE = 30;
 
 interface HeatCell {
   lat: number;
@@ -86,10 +89,10 @@ export async function GET(request: NextRequest) {
             lte(heatCells.lat, maxLat),
             gte(heatCells.lng, minLng),
             lte(heatCells.lng, maxLng),
-            eq(heatCells.gridStep, gridStep)
+            eq(heatCells.gridStep, gridStep),
+            gte(heatCells.score, MIN_VISIBLE_SCORE) // Skip invisible cells
           )
-        )
-        .limit(50000); // Allow large responses for full coverage
+        );
 
       cells = dbCells;
     }

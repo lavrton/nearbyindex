@@ -22,7 +22,7 @@ interface HeatmapData {
 
 const HEATMAP_SOURCE_ID = "heatmap-source";
 const HEATMAP_LAYER_ID = "heatmap-layer";
-const MAX_CACHED_CELLS = 10000; // Limit cache size to prevent memory issues
+const MAX_CACHED_CELLS = 100000; // Allow caching entire city (Cancun ~57k visible cells)
 
 // Create a unique key for a cell based on its coordinates
 function cellKey(lat: number, lng: number): string {
