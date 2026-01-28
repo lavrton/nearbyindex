@@ -29,7 +29,7 @@ export const db = new Proxy({} as PostgresJsDatabase<typeof schema>, {
     if (!instance) {
       throw new Error("Database not configured. Set DATABASE_URL environment variable.");
     }
-    return (instance as Record<string | symbol, unknown>)[prop];
+    return (instance as unknown as Record<string | symbol, unknown>)[prop];
   },
 });
 
