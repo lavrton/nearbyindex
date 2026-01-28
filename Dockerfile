@@ -31,6 +31,9 @@ COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 # Copy source code
 COPY . .
 
+# Ensure public folder exists (may be empty)
+RUN mkdir -p /app/apps/web/public
+
 # Build the Next.js application
 WORKDIR /app/apps/web
 RUN pnpm build
