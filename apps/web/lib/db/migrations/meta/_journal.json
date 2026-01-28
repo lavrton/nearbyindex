@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1769529369846,
+      "tag": "0000_rich_silver_surfer",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769530451607,
+      "tag": "0001_add-city-bounds",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1769550148755,
+      "tag": "0002_medical_storm",
+      "breakpoints": true
+    }
+  ]
+}

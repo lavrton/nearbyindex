@@ -1,0 +1,27 @@
+{
+  "name": "nearbyindex",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "pnpm --filter @nearbyindex/web dev",
+    "build": "pnpm --filter @nearbyindex/web build",
+    "start": "pnpm --filter @nearbyindex/web start",
+    "lint": "pnpm --filter @nearbyindex/web lint",
+    "db:generate": "pnpm --filter @nearbyindex/web db:generate",
+    "db:migrate": "pnpm --filter @nearbyindex/web db:migrate",
+    "db:push": "pnpm --filter @nearbyindex/web db:push",
+    "db:studio": "pnpm --filter @nearbyindex/web db:studio",
+    "setup:pois": "pnpm --filter @nearbyindex/web setup:pois",
+    "setup:pois:cancun": "pnpm --filter @nearbyindex/web setup:pois:cancun",
+    "setup:pois:world": "pnpm --filter @nearbyindex/web setup:pois:world",
+    "dev:prod": "pnpm --filter @nearbyindex/web dev:prod",
+    "db:migrate:prod": "pnpm --filter @nearbyindex/web db:migrate:prod",
+    "db:push:prod": "pnpm --filter @nearbyindex/web db:push:prod",
+    "db:studio:prod": "pnpm --filter @nearbyindex/web db:studio:prod",
+    "setup:pois:cancun:prod": "pnpm --filter @nearbyindex/web setup:pois:cancun:prod"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "common": {
+    "appName": "NearbyIndex",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "close": "Close"
+  },
+  "map": {
+    "searchPlaceholder": "Search for an address...",
+    "clickToScore": "Click anywhere on the map to see the infrastructure score",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "myLocation": "My location",
+    "toggleHeatmap": "Toggle heatmap"
+  },
+  "score": {
+    "title": "Infrastructure Score",
+    "overall": "Overall Score",
+    "calculating": "Calculating score...",
+    "noData": "No data available for this location",
+    "categories": {
+      "groceries": "Groceries",
+      "restaurants": "Restaurants & Cafes",
+      "transit": "Public Transit",
+      "healthcare": "Healthcare",
+      "education": "Education",
+      "parks": "Parks & Recreation",
+      "shopping": "Shopping",
+      "entertainment": "Entertainment"
+    },
+    "details": {
+      "nearestDistance": "Nearest: {distance}m",
+      "count": "{count} within {radius}m"
+    }
+  },
+  "city": {
+    "exploreTitle": "Explore {city}",
+    "description": "Discover the infrastructure and walkability score of different areas in {city}"
+  },
+  "meta": {
+    "title": "NearbyIndex - Infrastructure Score for Any Location",
+    "description": "Discover the infrastructure score and walkability of any location. Find areas with the best access to groceries, transit, healthcare, and more."
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "common": {
+    "appName": "NearbyIndex",
+    "loading": "Laden...",
+    "error": "Ein Fehler ist aufgetreten",
+    "retry": "Erneut versuchen",
+    "close": "Schließen"
+  },
+  "map": {
+    "searchPlaceholder": "Adresse suchen...",
+    "clickToScore": "Klicken Sie auf die Karte, um den Infrastruktur-Score zu sehen",
+    "zoomIn": "Vergrößern",
+    "zoomOut": "Verkleinern",
+    "myLocation": "Mein Standort",
+    "toggleHeatmap": "Heatmap umschalten"
+  },
+  "score": {
+    "title": "Infrastruktur-Score",
+    "overall": "Gesamtbewertung",
+    "calculating": "Score wird berechnet...",
+    "noData": "Keine Daten für diesen Standort verfügbar",
+    "categories": {
+      "groceries": "Lebensmittel",
+      "restaurants": "Restaurants & Cafés",
+      "transit": "Öffentlicher Nahverkehr",
+      "healthcare": "Gesundheitswesen",
+      "education": "Bildung",
+      "parks": "Parks & Erholung",
+      "shopping": "Einkaufen",
+      "entertainment": "Unterhaltung"
+    },
+    "details": {
+      "nearestDistance": "Nächste: {distance}m",
+      "count": "{count} innerhalb von {radius}m"
+    }
+  },
+  "city": {
+    "exploreTitle": "{city} erkunden",
+    "description": "Entdecken Sie den Infrastruktur- und Walkability-Score verschiedener Gebiete in {city}"
+  },
+  "meta": {
+    "title": "NearbyIndex - Infrastruktur-Score für jeden Standort",
+    "description": "Entdecken Sie den Infrastruktur-Score und die Begehbarkeit jedes Standorts. Finden Sie Gebiete mit bestem Zugang zu Lebensmitteln, Nahverkehr, Gesundheitsversorgung und mehr."
+  }
+}

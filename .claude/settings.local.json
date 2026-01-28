@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(pnpm db:push:*)",
+      "Bash(DATABASE_URL=postgresql://nearbyindex:nearbyindex@localhost:5432/nearbyindex pnpm db:push:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(DATABASE_URL=postgresql://nearbyindex:nearbyindex@localhost:5432/nearbyindex pnpm heatmap:compute:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm drizzle-kit generate:*)",
+      "Bash(pnpm drizzle-kit push:*)",
+      "Bash(source .env.local)",
+      "Bash(DATABASE_URL=\"postgresql://nearbyindex:nearbyindex@localhost:5432/nearbyindex\" pnpm drizzle-kit push:*)",
+      "Bash(npx tsc:*)",
+      "Bash(ls:*)",
+      "Bash(npx drizzle-kit:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm dev)",
+      "Bash(pnpm exec tsx:*)",
+      "Bash(pnpm exec tsc:*)",
+      "WebSearch",
+      "Bash(overturemaps:*)",
+      "Bash(duckdb:*)",
+      "Bash(pip install:*)",
+      "Bash(brew install:*)",
+      "Bash(pip3 install:*)",
+      "Bash(pipx ensurepath:*)",
+      "Bash(pipx install:*)",
+      "Bash(pnpm db:generate:*)",
+      "Bash(pnpm exec next lint:*)",
+      "Bash(pnpm db:push:prod:*)",
+      "Bash(pnpm setup:pois:cancun:prod:*)"
+    ]
+  }
+}

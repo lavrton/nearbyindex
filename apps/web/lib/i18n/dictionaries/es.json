@@ -1,0 +1,45 @@
+{
+  "common": {
+    "appName": "NearbyIndex",
+    "loading": "Cargando...",
+    "error": "Ocurrió un error",
+    "retry": "Reintentar",
+    "close": "Cerrar"
+  },
+  "map": {
+    "searchPlaceholder": "Buscar una dirección...",
+    "clickToScore": "Haz clic en cualquier lugar del mapa para ver la puntuación de infraestructura",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "myLocation": "Mi ubicación",
+    "toggleHeatmap": "Alternar mapa de calor"
+  },
+  "score": {
+    "title": "Puntuación de Infraestructura",
+    "overall": "Puntuación General",
+    "calculating": "Calculando puntuación...",
+    "noData": "No hay datos disponibles para esta ubicación",
+    "categories": {
+      "groceries": "Supermercados",
+      "restaurants": "Restaurantes y Cafeterías",
+      "transit": "Transporte Público",
+      "healthcare": "Salud",
+      "education": "Educación",
+      "parks": "Parques y Recreación",
+      "shopping": "Compras",
+      "entertainment": "Entretenimiento"
+    },
+    "details": {
+      "nearestDistance": "Más cercano: {distance}m",
+      "count": "{count} dentro de {radius}m"
+    }
+  },
+  "city": {
+    "exploreTitle": "Explorar {city}",
+    "description": "Descubre la puntuación de infraestructura y caminabilidad de diferentes áreas en {city}"
+  },
+  "meta": {
+    "title": "NearbyIndex - Puntuación de Infraestructura para Cualquier Ubicación",
+    "description": "Descubre la puntuación de infraestructura y caminabilidad de cualquier ubicación. Encuentra áreas con mejor acceso a supermercados, transporte, salud y más."
+  }
+}

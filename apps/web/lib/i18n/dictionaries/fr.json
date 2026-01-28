@@ -1,0 +1,45 @@
+{
+  "common": {
+    "appName": "NearbyIndex",
+    "loading": "Chargement...",
+    "error": "Une erreur s'est produite",
+    "retry": "Réessayer",
+    "close": "Fermer"
+  },
+  "map": {
+    "searchPlaceholder": "Rechercher une adresse...",
+    "clickToScore": "Cliquez n'importe où sur la carte pour voir le score d'infrastructure",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "myLocation": "Ma position",
+    "toggleHeatmap": "Basculer la carte thermique"
+  },
+  "score": {
+    "title": "Score d'Infrastructure",
+    "overall": "Score Global",
+    "calculating": "Calcul du score...",
+    "noData": "Aucune donnée disponible pour cet emplacement",
+    "categories": {
+      "groceries": "Épiceries",
+      "restaurants": "Restaurants et Cafés",
+      "transit": "Transports en Commun",
+      "healthcare": "Santé",
+      "education": "Éducation",
+      "parks": "Parcs et Loisirs",
+      "shopping": "Shopping",
+      "entertainment": "Divertissement"
+    },
+    "details": {
+      "nearestDistance": "Le plus proche: {distance}m",
+      "count": "{count} dans un rayon de {radius}m"
+    }
+  },
+  "city": {
+    "exploreTitle": "Explorer {city}",
+    "description": "Découvrez le score d'infrastructure et de marchabilité des différents quartiers de {city}"
+  },
+  "meta": {
+    "title": "NearbyIndex - Score d'Infrastructure pour Tout Emplacement",
+    "description": "Découvrez le score d'infrastructure et de marchabilité de tout emplacement. Trouvez les zones avec le meilleur accès aux épiceries, transports, soins de santé et plus."
+  }
+}
