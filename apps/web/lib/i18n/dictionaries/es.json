@@ -6,6 +6,9 @@
     "retry": "Reintentar",
     "close": "Cerrar"
   },
+  "header": {
+    "tagline": "Checa el vibe de cualquier lugar del mundo"
+  },
   "map": {
     "searchPlaceholder": "Buscar una dirección...",
     "clickToScore": "Haz clic en cualquier lugar del mapa para ver la puntuación de infraestructura",
@@ -14,8 +17,17 @@
     "myLocation": "Mi ubicación",
     "toggleHeatmap": "Alternar mapa de calor"
   },
+  "hint": {
+    "title": "Haz clic para ver la puntuación",
+    "subtitle": "Descubre la calidad de infraestructura en cualquier punto"
+  },
+  "emptyState": {
+    "title": "Elige tu spot",
+    "subtitle": "Toca cualquier lugar para sentir el vibe",
+    "searchHint": "O escribe una dirección para teletransportarte"
+  },
   "score": {
-    "title": "Puntuación de Infraestructura",
+    "title": "Vibe Score",
     "overall": "Puntuación General",
     "calculating": "Calculando puntuación...",
     "noData": "No hay datos disponibles para esta ubicación",
@@ -29,6 +41,16 @@
       "shopping": "Compras",
       "entertainment": "Entretenimiento"
     },
+    "categoryDescriptions": {
+      "groceries": "Supermercados, tiendas dentro de 800m",
+      "restaurants": "Restaurantes, cafés, bares dentro de 600m",
+      "transit": "Paradas de bus, estaciones dentro de 1km",
+      "healthcare": "Hospitales, clínicas, farmacias dentro de 1.5km",
+      "education": "Escuelas, universidades dentro de 1.2km",
+      "parks": "Parques, áreas de juego dentro de 800m",
+      "shopping": "Tiendas, centros comerciales dentro de 800m",
+      "entertainment": "Cines, teatros, gimnasios dentro de 1.2km"
+    },
     "details": {
       "nearestDistance": "Más cercano: {distance}m",
       "count": "{count} dentro de {radius}m"
@@ -36,10 +58,58 @@
   },
   "city": {
     "exploreTitle": "Explorar {city}",
-    "description": "Descubre la puntuación de infraestructura y caminabilidad de diferentes áreas en {city}"
+    "description": "Descubre la puntuación de infraestructura y caminabilidad de diferentes áreas en {city}",
+    "overallScore": "Puntuación General",
+    "exploreMap": "Haz clic en el mapa para explorar ubicaciones específicas"
   },
   "meta": {
     "title": "NearbyIndex - Puntuación de Infraestructura para Cualquier Ubicación",
     "description": "Descubre la puntuación de infraestructura y caminabilidad de cualquier ubicación. Encuentra áreas con mejor acceso a supermercados, transporte, salud y más."
+  },
+  "share": {
+    "title": "Compartir esta ubicación",
+    "shareScore": "Compartir puntuación",
+    "chooseStyle": "Elegir estilo",
+    "styles": {
+      "social": "Social",
+      "print": "Imprimir",
+      "story": "Historia",
+      "dark": "Oscuro"
+    },
+    "copyLink": "Copiar enlace",
+    "copied": "¡Copiado!",
+    "download": "Descargar imagen",
+    "downloadHint": "Perfecto para imprimir o redes sociales",
+    "nativeShare": "Compartir...",
+    "scanToView": "Escanea para ver esta ubicación",
+    "scoredBy": "Puntuado por nearbyindex.com"
+  },
+  "badges": {
+    "perfect_spot": "Lugar Perfecto",
+    "15min_hero": "Héroe de 15 Minutos",
+    "night_owl": "Ave Nocturna",
+    "suburban_dream": "Sueño Suburbano",
+    "food_desert": "Superviviente del Desierto",
+    "car_required": "Auto Requerido",
+    "certified_chaos": "Caos Certificado",
+    "off_grid": "Leyenda Desconectada",
+    "workaholic_zone": "Zona de Trabajo",
+    "wellness_retreat": "Refugio de Bienestar"
+  },
+  "badge-descriptions": {
+    "perfect_spot": "El sueño de la planificación urbana",
+    "15min_hero": "Todo a pie",
+    "night_owl": "Bares > supermercados",
+    "suburban_dream": "Niños y perros prosperan aquí",
+    "food_desert": "MVP de delivery",
+    "car_required": "¿Transporte público? Nunca escuché",
+    "certified_chaos": "Abraza el desorden",
+    "off_grid": "La civilización es opcional",
+    "workaholic_zone": "Todo trabajo, sin diversión",
+    "wellness_retreat": "Gimnasios y parques"
+  },
+  "vibe": {
+    "loading": "Leyendo las vibras...",
+    "error": "Vibras confusas. Intenta más tarde."
   }
 }

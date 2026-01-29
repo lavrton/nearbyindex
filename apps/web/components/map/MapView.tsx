@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Layers, Minus, Plus, LocateFixed } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Layers, Minus, Plus, LocateFixed, X, MousePointer } from "lucide-react";
 import type { SelectedLocation, SelectedCategory } from "./MapContainer";
 import { HeatmapLayer } from "./HeatmapLayer";
 import { categoryColors } from "@/components/score/CategoryScore";
@@ -27,12 +29,26 @@ export function MapView({
   onToggleHeatmap,
   selectedCategory,
 }: MapViewProps) {
+  const t = useTranslations("hint");
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const marker = useRef<maplibregl.Marker | null>(null);
   const poiMarkers = useRef<maplibregl.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
   const hasRequestedLocation = useRef(false);
+
+  // First-time hint state
+  const [showHint, setShowHint] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return !localStorage.getItem("nearbyindex_onboarded");
+  });
+  const showHintRef = useRef(showHint);
+  showHintRef.current = showHint;
+
+  const dismissHint = useCallback(() => {
+    localStorage.setItem("nearbyindex_onboarded", "true");
+    setShowHint(false);
+  }, []);
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -83,10 +99,31 @@ export function MapView({
     });
 
     map.current.on("click", (e) => {
-      onLocationSelect({
-        lat: e.lngLat.lat,
-        lng: e.lngLat.lng,
-      });
+      // Auto-dismiss hint on first click
+      if (showHintRef.current) {
+        localStorage.setItem("nearbyindex_onboarded", "true");
+        setShowHint(false);
+      }
+
+      const lat = e.lngLat.lat;
+      const lng = e.lngLat.lng;
+
+      // Set location immediately for fast UX
+      onLocationSelect({ lat, lng });
+
+      // Fetch address in background via reverse geocoding
+      fetch(`/api/geocode/reverse?lat=${lat}&lng=${lng}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.displayName) {
+            // Update location with address
+            onLocationSelect({ lat, lng, address: data.displayName });
+          }
+        })
+        .catch((err) => {
+          // Silent fail - address is optional
+          console.log("Reverse geocoding failed:", err);
+        });
     });
 
     return () => {
@@ -125,7 +162,9 @@ export function MapView({
         padding,
       });
     }
-  }, [selectedLocation]);
+    // Only re-run when coordinates change, not when address is added
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLocation?.lat, selectedLocation?.lng]);
 
   // Update POI markers when selected category changes
   useEffect(() => {
@@ -205,7 +244,21 @@ export function MapView({
           duration: 1000,
           padding,
         });
+
+        // Set location immediately
         onLocationSelect({ lat: latitude, lng: longitude });
+
+        // Fetch address in background
+        fetch(`/api/geocode/reverse?lat=${latitude}&lng=${longitude}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.displayName) {
+              onLocationSelect({ lat: latitude, lng: longitude, address: data.displayName });
+            }
+          })
+          .catch((err) => {
+            console.log("Reverse geocoding failed:", err);
+          });
       },
       (error) => {
         console.error("Geolocation error:", error);
@@ -256,6 +309,29 @@ export function MapView({
       {/* Heatmap Layer */}
       {mapLoaded && map.current && (
         <HeatmapLayer map={map.current} visible={showHeatmap} />
+      )}
+
+      {/* First-time hint overlay */}
+      {showHint && !selectedLocation && (
+        <Card className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 px-6 py-4 shadow-lg bg-background/95 backdrop-blur-sm">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute -right-2 -top-2 h-6 w-6 rounded-full bg-background shadow"
+            onClick={dismissHint}
+          >
+            <X className="h-3 w-3" />
+          </Button>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+              <MousePointer className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium text-sm">{t("title")}</p>
+              <p className="text-xs text-muted-foreground">{t("subtitle")}</p>
+            </div>
+          </div>
+        </Card>
       )}
     </div>
   );

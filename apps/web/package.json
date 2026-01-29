@@ -21,7 +21,8 @@
     "db:migrate:prod": "dotenv -e .env.production.local -- drizzle-kit migrate",
     "db:push:prod": "dotenv -e .env.production.local -- drizzle-kit push",
     "db:studio:prod": "dotenv -e .env.production.local -- drizzle-kit studio",
-    "setup:pois:cancun:prod": "dotenv -e .env.production.local -- tsx scripts/setup-overture.ts --bbox=-87.2,20.8,-86.5,21.4"
+    "setup:pois:cancun:prod": "dotenv -e .env.production.local -- tsx scripts/setup-overture.ts --bbox=-87.2,20.8,-86.5,21.4",
+    "setup:pois:world:prod": "dotenv -e .env.production.local -- tsx scripts/setup-overture.ts --bbox=-180,-90,180,90"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.4",
@@ -32,11 +33,14 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.38.4",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^0.469.0",
     "maplibre-gl": "^4.7.1",
     "next": "^15.1.6",
     "next-intl": "^3.26.3",
+    "openai": "^6.17.0",
     "postgres": "^3.4.5",
+    "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwind-merge": "^2.6.0",

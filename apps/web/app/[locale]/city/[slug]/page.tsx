@@ -2,20 +2,11 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale, getTranslations } from "next-intl/server";
 import { MapContainer } from "@/components/map/MapContainer";
+import { CityStats } from "@/components/CityStats";
+import { getCityStats, CITIES } from "@/lib/city-scores";
 
-// Sample cities for MVP - in production this would come from database
-const cities: Record<string, { name: string; lat: number; lng: number; country: string }> = {
-  berlin: { name: "Berlin", lat: 52.52, lng: 13.405, country: "DE" },
-  munich: { name: "Munich", lat: 48.1351, lng: 11.582, country: "DE" },
-  hamburg: { name: "Hamburg", lat: 53.5511, lng: 9.9937, country: "DE" },
-  frankfurt: { name: "Frankfurt", lat: 50.1109, lng: 8.6821, country: "DE" },
-  cologne: { name: "Cologne", lat: 50.9375, lng: 6.9603, country: "DE" },
-  vienna: { name: "Vienna", lat: 48.2082, lng: 16.3738, country: "AT" },
-  zurich: { name: "Zurich", lat: 47.3769, lng: 8.5417, country: "CH" },
-  amsterdam: { name: "Amsterdam", lat: 52.3676, lng: 4.9041, country: "NL" },
-  paris: { name: "Paris", lat: 48.8566, lng: 2.3522, country: "FR" },
-  london: { name: "London", lat: 51.5074, lng: -0.1278, country: "GB" },
-};
+// Use cities from city-scores module
+const cities = CITIES;
 
 interface CityPageProps {
   params: Promise<{ locale: string; slug: string }>;
@@ -39,6 +30,7 @@ export async function generateMetadata({
 }: CityPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
   const city = cities[slug];
+  const stats = getCityStats(slug);
 
   if (!city) {
     return {};
@@ -47,7 +39,11 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "city" });
 
   const title = `${t("exploreTitle", { city: city.name })} | NearbyIndex`;
-  const description = t("description", { city: city.name });
+  // Include score in description for SEO
+  const baseDescription = t("description", { city: city.name });
+  const description = stats
+    ? `${baseDescription}. Overall score: ${stats.overallScore}/100.`
+    : baseDescription;
 
   return {
     title,
@@ -73,14 +69,22 @@ export default async function CityPage({ params }: CityPageProps) {
   setRequestLocale(locale);
 
   const city = cities[slug];
+  const stats = getCityStats(slug);
 
   if (!city) {
     notFound();
   }
 
   return (
-    <main className="h-screen w-screen relative">
-      <MapContainer />
+    <main className="h-screen w-screen flex flex-col">
+      {/* City stats section - only show if stats available */}
+      {stats && <CityStats stats={stats} />}
+
+      {/* Map section - takes remaining height */}
+      <div className="flex-1 relative min-h-0">
+        <MapContainer />
+      </div>
+
       {/* City-specific initial viewport will be set via URL params or context */}
       <script
         dangerouslySetInnerHTML={{

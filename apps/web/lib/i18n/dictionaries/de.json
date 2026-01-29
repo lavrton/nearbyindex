@@ -6,6 +6,9 @@
     "retry": "Erneut versuchen",
     "close": "Schließen"
   },
+  "header": {
+    "tagline": "Vibe-Check für jeden Ort der Welt"
+  },
   "map": {
     "searchPlaceholder": "Adresse suchen...",
     "clickToScore": "Klicken Sie auf die Karte, um den Infrastruktur-Score zu sehen",
@@ -14,8 +17,17 @@
     "myLocation": "Mein Standort",
     "toggleHeatmap": "Heatmap umschalten"
   },
+  "hint": {
+    "title": "Klicken Sie, um Score zu sehen",
+    "subtitle": "Entdecken Sie die Infrastrukturqualität an jedem Punkt"
+  },
+  "emptyState": {
+    "title": "Wähle deinen Spot",
+    "subtitle": "Tippe irgendwo, um den Vibe zu checken",
+    "searchHint": "Oder gib eine Adresse ein, um dich zu teleportieren"
+  },
   "score": {
-    "title": "Infrastruktur-Score",
+    "title": "Vibe Score",
     "overall": "Gesamtbewertung",
     "calculating": "Score wird berechnet...",
     "noData": "Keine Daten für diesen Standort verfügbar",
@@ -29,6 +41,16 @@
       "shopping": "Einkaufen",
       "entertainment": "Unterhaltung"
     },
+    "categoryDescriptions": {
+      "groceries": "Supermärkte, Geschäfte im Umkreis von 800m",
+      "restaurants": "Restaurants, Cafés, Bars im Umkreis von 600m",
+      "transit": "Bushaltestellen, Bahnhöfe im Umkreis von 1km",
+      "healthcare": "Krankenhäuser, Kliniken, Apotheken im Umkreis von 1,5km",
+      "education": "Schulen, Universitäten im Umkreis von 1,2km",
+      "parks": "Parks, Spielplätze im Umkreis von 800m",
+      "shopping": "Einzelhandel, Einkaufszentren im Umkreis von 800m",
+      "entertainment": "Kinos, Theater, Fitnessstudios im Umkreis von 1,2km"
+    },
     "details": {
       "nearestDistance": "Nächste: {distance}m",
       "count": "{count} innerhalb von {radius}m"
@@ -36,10 +58,58 @@
   },
   "city": {
     "exploreTitle": "{city} erkunden",
-    "description": "Entdecken Sie den Infrastruktur- und Walkability-Score verschiedener Gebiete in {city}"
+    "description": "Entdecken Sie den Infrastruktur- und Walkability-Score verschiedener Gebiete in {city}",
+    "overallScore": "Gesamtbewertung",
+    "exploreMap": "Klicken Sie auf die Karte, um Standorte zu erkunden"
   },
   "meta": {
     "title": "NearbyIndex - Infrastruktur-Score für jeden Standort",
     "description": "Entdecken Sie den Infrastruktur-Score und die Begehbarkeit jedes Standorts. Finden Sie Gebiete mit bestem Zugang zu Lebensmitteln, Nahverkehr, Gesundheitsversorgung und mehr."
+  },
+  "share": {
+    "title": "Diesen Standort teilen",
+    "shareScore": "Score teilen",
+    "chooseStyle": "Stil wählen",
+    "styles": {
+      "social": "Sozial",
+      "print": "Druck",
+      "story": "Story",
+      "dark": "Dunkel"
+    },
+    "copyLink": "Link kopieren",
+    "copied": "Kopiert!",
+    "download": "Bild herunterladen",
+    "downloadHint": "Perfekt zum Drucken oder für soziale Medien",
+    "nativeShare": "Teilen...",
+    "scanToView": "Scannen, um diesen Standort anzuzeigen",
+    "scoredBy": "Bewertet von nearbyindex.com"
+  },
+  "badges": {
+    "perfect_spot": "Perfekter Ort",
+    "15min_hero": "15-Minuten-Held",
+    "night_owl": "Nachteule",
+    "suburban_dream": "Vorstadt-Traum",
+    "food_desert": "Lebensmittelwüsten-Held",
+    "car_required": "Auto erforderlich",
+    "certified_chaos": "Zertifiziertes Chaos",
+    "off_grid": "Abseits des Netzes",
+    "workaholic_zone": "Workaholic-Zone",
+    "wellness_retreat": "Wellness-Oase"
+  },
+  "badge-descriptions": {
+    "perfect_spot": "Der Stadtplanungstraum",
+    "15min_hero": "Alles zu Fuß erreichbar",
+    "night_owl": "Bars > Lebensmittel",
+    "suburban_dream": "Kinder und Hunde lieben es hier",
+    "food_desert": "Lieferservice-MVP",
+    "car_required": "ÖPNV? Nie gehört",
+    "certified_chaos": "Das Chaos umarmen",
+    "off_grid": "Zivilisation optional",
+    "workaholic_zone": "Nur Arbeit, kein Vergnügen",
+    "wellness_retreat": "Fitnessstudios und Grün"
+  },
+  "vibe": {
+    "loading": "Lese die Vibes...",
+    "error": "Vibes unklar. Versuch's später nochmal."
   }
 }

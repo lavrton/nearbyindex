@@ -6,6 +6,9 @@
     "retry": "Réessayer",
     "close": "Fermer"
   },
+  "header": {
+    "tagline": "Vibe check n'importe où sur terre"
+  },
   "map": {
     "searchPlaceholder": "Rechercher une adresse...",
     "clickToScore": "Cliquez n'importe où sur la carte pour voir le score d'infrastructure",
@@ -14,8 +17,17 @@
     "myLocation": "Ma position",
     "toggleHeatmap": "Basculer la carte thermique"
   },
+  "hint": {
+    "title": "Cliquez pour voir le score",
+    "subtitle": "Découvrez la qualité de l'infrastructure à n'importe quel point"
+  },
+  "emptyState": {
+    "title": "Choisis ton spot",
+    "subtitle": "Touche n'importe où pour sentir le vibe",
+    "searchHint": "Ou tape une adresse pour te téléporter"
+  },
   "score": {
-    "title": "Score d'Infrastructure",
+    "title": "Vibe Score",
     "overall": "Score Global",
     "calculating": "Calcul du score...",
     "noData": "Aucune donnée disponible pour cet emplacement",
@@ -29,6 +41,16 @@
       "shopping": "Shopping",
       "entertainment": "Divertissement"
     },
+    "categoryDescriptions": {
+      "groceries": "Supermarchés, épiceries dans un rayon de 800m",
+      "restaurants": "Restaurants, cafés, bars dans un rayon de 600m",
+      "transit": "Arrêts de bus, gares dans un rayon de 1km",
+      "healthcare": "Hôpitaux, cliniques, pharmacies dans un rayon de 1,5km",
+      "education": "Écoles, universités dans un rayon de 1,2km",
+      "parks": "Parcs, aires de jeux dans un rayon de 800m",
+      "shopping": "Magasins, centres commerciaux dans un rayon de 800m",
+      "entertainment": "Cinémas, théâtres, salles de sport dans un rayon de 1,2km"
+    },
     "details": {
       "nearestDistance": "Le plus proche: {distance}m",
       "count": "{count} dans un rayon de {radius}m"
@@ -36,10 +58,58 @@
   },
   "city": {
     "exploreTitle": "Explorer {city}",
-    "description": "Découvrez le score d'infrastructure et de marchabilité des différents quartiers de {city}"
+    "description": "Découvrez le score d'infrastructure et de marchabilité des différents quartiers de {city}",
+    "overallScore": "Score Global",
+    "exploreMap": "Cliquez sur la carte pour explorer des emplacements spécifiques"
   },
   "meta": {
     "title": "NearbyIndex - Score d'Infrastructure pour Tout Emplacement",
     "description": "Découvrez le score d'infrastructure et de marchabilité de tout emplacement. Trouvez les zones avec le meilleur accès aux épiceries, transports, soins de santé et plus."
+  },
+  "share": {
+    "title": "Partager cet emplacement",
+    "shareScore": "Partager le score",
+    "chooseStyle": "Choisir le style",
+    "styles": {
+      "social": "Social",
+      "print": "Imprimer",
+      "story": "Story",
+      "dark": "Sombre"
+    },
+    "copyLink": "Copier le lien",
+    "copied": "Copié !",
+    "download": "Télécharger l'image",
+    "downloadHint": "Parfait pour l'impression ou les réseaux sociaux",
+    "nativeShare": "Partager...",
+    "scanToView": "Scannez pour voir cet emplacement",
+    "scoredBy": "Évalué par nearbyindex.com"
+  },
+  "badges": {
+    "perfect_spot": "Endroit Parfait",
+    "15min_hero": "Héros des 15 Minutes",
+    "night_owl": "Oiseau de Nuit",
+    "suburban_dream": "Rêve de Banlieue",
+    "food_desert": "Survivant du Désert",
+    "car_required": "Voiture Requise",
+    "certified_chaos": "Chaos Certifié",
+    "off_grid": "Légende Hors Réseau",
+    "workaholic_zone": "Zone Workaholic",
+    "wellness_retreat": "Retraite Bien-être"
+  },
+  "badge-descriptions": {
+    "perfect_spot": "Le rêve de l'urbanisme",
+    "15min_hero": "Tout à pied",
+    "night_owl": "Bars > épiceries",
+    "suburban_dream": "Enfants et chiens adorent",
+    "food_desert": "MVP de la livraison",
+    "car_required": "Transport en commun ? Jamais entendu",
+    "certified_chaos": "Embrassez le désordre",
+    "off_grid": "La civilisation est optionnelle",
+    "workaholic_zone": "Que du travail, pas de plaisir",
+    "wellness_retreat": "Salles de sport et verdure"
+  },
+  "vibe": {
+    "loading": "Lecture des vibes...",
+    "error": "Vibes floues. Réessaie plus tard."
   }
 }

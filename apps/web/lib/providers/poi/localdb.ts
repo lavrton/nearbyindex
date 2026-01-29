@@ -2,7 +2,10 @@ import { getDb } from "@/lib/db/client";
 import { overturePois } from "@/lib/db/schema";
 import { and, gte, lte, inArray, sql } from "drizzle-orm";
 import type { POIProvider, POI, POIQueryOptions } from "./types";
-import { osmTagsToOvertureCategories } from "./category-map";
+import {
+  osmTagsToOvertureCategories,
+  overtureCategoryToOsmTag,
+} from "./category-map";
 
 export class LocalDBProvider implements POIProvider {
   async queryPOIs(options: POIQueryOptions): Promise<POI[]> {
@@ -40,7 +43,8 @@ export class LocalDBProvider implements POIProvider {
       lat: row.lat,
       lng: row.lng,
       name: row.name,
-      category: tags[0] || row.category, // Return in expected OSM format
+      // Map Overture category back to matching OSM tag for sub-type detection
+      category: overtureCategoryToOsmTag(row.category, tags) || row.category,
       tags: (row.tags as Record<string, string>) || {},
       distance: this.calculateDistance(lat, lng, row.lat, row.lng),
     }));

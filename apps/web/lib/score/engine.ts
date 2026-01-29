@@ -3,8 +3,10 @@ import type {
   ScoreResult,
   CategoryScoreResult,
   CategoryDefinition,
+  SubType,
 } from "./types";
 import { getPOIProvider } from "@/lib/providers/poi";
+import type { POI } from "@/lib/providers/poi/types";
 export async function calculateScore(
   lat: number,
   lng: number
@@ -33,11 +35,7 @@ export async function calculateScore(
 
   // Calculate scores for each category
   for (const { category, pois, nearestDistance } of results) {
-    const score = calculateCategoryScore(
-      category,
-      pois.length,
-      nearestDistance
-    );
+    const score = calculateCategoryScore(category, pois, nearestDistance);
 
     // Sort POIs by distance and limit to 20 closest
     const sortedPois = pois
@@ -81,41 +79,129 @@ export async function calculateScore(
 
 function calculateCategoryScore(
   category: CategoryDefinition,
-  count: number,
+  pois: POI[],
   nearestDistance: number | null
 ): number {
+  const count = pois.length;
+
   // No POIs = 0 score
   if (count === 0) return 0;
 
-  // Logarithmic count score (0-60 points)
-  // Diminishing returns: first few POIs matter most, then tapers off
-  // Formula: 60 * log(1 + count * k) / log(1 + maxCount * k)
-  // k controls curve steepness (higher = more diminishing)
-  const k = 0.5;
-  const logMax = Math.log(1 + category.maxCount * k);
-  const countScore = 60 * Math.log(1 + count * k) / logMax;
+  // If category has sub-types, use diversity-aware scoring
+  if (category.subTypes && category.subTypes.length > 0) {
+    return calculateSubTypeScore(category, pois, nearestDistance);
+  }
+
+  // Standard scoring for categories without sub-types
+  return calculateSimpleScore(
+    count,
+    category.maxCount,
+    category.saturationK ?? 0.5,
+    nearestDistance,
+    category.radius,
+    category.minCount
+  );
+}
+
+/** Calculate score for categories with sub-types (e.g., healthcare) */
+function calculateSubTypeScore(
+  category: CategoryDefinition,
+  pois: POI[],
+  nearestDistance: number | null
+): number {
+  const subTypes = category.subTypes!;
+
+  // Group POIs by sub-type
+  const poiBySubType = new Map<string, POI[]>();
+  for (const subType of subTypes) {
+    poiBySubType.set(subType.id, []);
+  }
+
+  for (const poi of pois) {
+    for (const subType of subTypes) {
+      if (subType.tags.includes(poi.category)) {
+        poiBySubType.get(subType.id)!.push(poi);
+        break; // Each POI belongs to one sub-type
+      }
+    }
+  }
+
+  // Calculate score contribution from each sub-type
+  // Each sub-type contributes proportionally to its maxCount relative to total
+  const totalMaxCount = subTypes.reduce((sum, st) => sum + st.maxCount, 0);
+  let countScore = 0;
+
+  for (const subType of subTypes) {
+    const subTypePois = poiBySubType.get(subType.id)!;
+    const subTypeCount = subTypePois.length;
+
+    if (subTypeCount === 0) continue;
+
+    // Weight of this sub-type in the overall score (based on maxCount proportion)
+    const subTypeWeight = subType.maxCount / totalMaxCount;
+
+    // Logarithmic score for this sub-type
+    const k = subType.saturationK;
+    const logMax = Math.log(1 + subType.maxCount * k);
+    const subTypeScore = Math.log(1 + subTypeCount * k) / logMax;
+
+    countScore += 60 * subTypeWeight * subTypeScore;
+  }
+
+  // Diversity bonus (0-15 points)
+  // Rewards having multiple different sub-types present
+  const presentSubTypes = subTypes.filter(
+    (st) => poiBySubType.get(st.id)!.length > 0
+  ).length;
+  const diversityBonus =
+    presentSubTypes > 1 ? Math.min(15, (presentSubTypes - 1) * 5) : 0;
 
   // Distance score (0-25 points)
-  // Rewards having POIs VERY close (within 200m for full bonus)
   let distanceScore = 0;
   if (nearestDistance !== null) {
-    // Full points at 0m, drops to 0 at 400m (stricter than before)
     const closeThreshold = Math.min(400, category.radius * 0.4);
     distanceScore = 25 * Math.max(0, 1 - nearestDistance / closeThreshold);
   }
 
+  // Penalty if minimum count not met
+  if (pois.length < category.minCount) {
+    return Math.round((countScore + distanceScore) * 0.4);
+  }
+
+  return Math.min(100, Math.round(countScore + distanceScore + diversityBonus));
+}
+
+/** Standard scoring without sub-types */
+function calculateSimpleScore(
+  count: number,
+  maxCount: number,
+  saturationK: number,
+  nearestDistance: number | null,
+  radius: number,
+  minCount: number
+): number {
+  // Logarithmic count score (0-60 points)
+  const k = saturationK;
+  const logMax = Math.log(1 + maxCount * k);
+  const countScore = (60 * Math.log(1 + count * k)) / logMax;
+
+  // Distance score (0-25 points)
+  let distanceScore = 0;
+  if (nearestDistance !== null) {
+    const closeThreshold = Math.min(400, radius * 0.4);
+    distanceScore = 25 * Math.max(0, 1 - nearestDistance / closeThreshold);
+  }
+
   // Density bonus (0-15 points)
-  // Rewards having MANY options, not just meeting minimum
-  // Only kicks in after exceeding maxCount (truly exceptional density)
   let densityBonus = 0;
-  if (count > category.maxCount) {
-    // Logarithmic bonus for exceeding expectations
-    const excess = count - category.maxCount;
-    densityBonus = 15 * Math.min(1, Math.log(1 + excess) / Math.log(1 + category.maxCount * 2));
+  if (count > maxCount) {
+    const excess = count - maxCount;
+    densityBonus =
+      15 * Math.min(1, Math.log(1 + excess) / Math.log(1 + maxCount * 2));
   }
 
   // Penalty if minimum count not met
-  if (count < category.minCount) {
+  if (count < minCount) {
     return Math.round((countScore + distanceScore) * 0.4);
   }
 
@@ -142,5 +228,5 @@ export async function calculateGroceryScore(
       ? Math.min(...pois.map((p) => p.distance ?? Infinity))
       : null;
 
-  return calculateCategoryScore(groceryCategory, pois.length, nearestDistance);
+  return calculateCategoryScore(groceryCategory, pois, nearestDistance);
 }

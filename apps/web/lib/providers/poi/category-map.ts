@@ -13,13 +13,15 @@ export const OSM_TO_OVERTURE: Record<string, string[]> = {
   "amenity=bar": ["bar", "pub"],
 
   // Transit
-  "railway=station": ["train_station", "subway_station"],
+  // Note: Overture POI data only has major stations, not individual bus stops
+  // For comprehensive transit coverage, consider adding GTFS or OSM transit data
+  "railway=station": ["train_station", "subway_station", "metro_station"],
   "railway=halt": ["train_station"],
-  "railway=tram_stop": ["tram_station"],
-  "amenity=bus_station": ["bus_station"],
-  "highway=bus_stop": ["bus_stop"],
-  "public_transport=stop_position": ["bus_stop", "train_station"],
-  "public_transport=platform": ["bus_stop", "train_station"],
+  "railway=tram_stop": ["tram_station", "light_rail_station"],
+  "amenity=bus_station": ["bus_station", "bus_terminal"],
+  "highway=bus_stop": ["bus_stop", "bus_station"], // Fallback to station since stops not in Overture
+  "public_transport=stop_position": ["bus_stop", "bus_station", "train_station", "public_transportation"],
+  "public_transport=platform": ["bus_stop", "bus_station", "train_station"],
 
   // Healthcare
   "amenity=hospital": ["hospital"],
@@ -50,13 +52,33 @@ export const OSM_TO_OVERTURE: Record<string, string[]> = {
   "shop=electronics": ["electronics_store"],
 
   // Entertainment
-  "amenity=cinema": ["movie_theater"],
-  "amenity=theatre": ["performing_arts_theater"],
-  "amenity=nightclub": ["nightclub"],
+  // Updated with actual Overture category names from database
+  "amenity=cinema": ["cinema", "movie_theater", "drive_in_theater"],
+  "amenity=theatre": [
+    "theatre",
+    "performing_arts_theater",
+    "theaters_and_performance_venues",
+    "comedy_club",
+  ],
+  "amenity=nightclub": ["dance_club", "nightclub"],
   "leisure=bowling_alley": ["bowling_alley"],
-  "tourism=museum": ["museum"],
+  "tourism=museum": ["museum", "art_museum", "history_museum"],
 };
 
 export function osmTagsToOvertureCategories(tags: string[]): string[] {
   return tags.flatMap((tag) => OSM_TO_OVERTURE[tag] || []);
+}
+
+/** Maps an Overture category back to the best matching OSM tag from the given tags */
+export function overtureCategoryToOsmTag(
+  overtureCategory: string,
+  availableTags: string[]
+): string | null {
+  for (const tag of availableTags) {
+    const overtureCategories = OSM_TO_OVERTURE[tag];
+    if (overtureCategories?.includes(overtureCategory)) {
+      return tag;
+    }
+  }
+  return null;
 }

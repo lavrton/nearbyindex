@@ -34,7 +34,28 @@
       "Bash(pnpm db:generate:*)",
       "Bash(pnpm exec next lint:*)",
       "Bash(pnpm db:push:prod:*)",
-      "Bash(pnpm setup:pois:cancun:prod:*)"
+      "Bash(pnpm setup:pois:cancun:prod:*)",
+      "Bash(docker build:*)",
+      "Bash(docker run:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(PGPASSWORD=nearbyindex psql:*)",
+      "Bash(docker exec:*)",
+      "Bash(tree:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)",
+      "Bash(xargs ls:*)",
+      "Bash(grep:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(npx eslint:*)",
+      "Bash(git diff:*)",
+      "Bash(npm run db:migrate:*)",
+      "Bash(npx dotenv:*)",
+      "Bash(npm run db:migrate:prod:*)",
+      "Bash(npm run db:push:prod:*)",
+      "Bash(xargs cat:*)",
+      "Bash(test:*)"
     ]
   }
 }

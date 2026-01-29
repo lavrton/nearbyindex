@@ -8,8 +8,10 @@ interface PointPageProps {
 }
 
 function parseCoords(coords: string): { lat: number; lng: number } | null {
+  // Decode URL-encoded characters (e.g., %2C -> ,)
+  const decoded = decodeURIComponent(coords);
   // Expected format: "52.52,13.405" (lat,lng)
-  const parts = coords.split(",");
+  const parts = decoded.split(",");
   if (parts.length !== 2) return null;
 
   const lat = parseFloat(parts[0]);

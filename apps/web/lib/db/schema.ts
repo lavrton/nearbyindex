@@ -120,6 +120,24 @@ export const overturePois = pgTable(
   ]
 );
 
+// Vibe cache - stores AI-generated vibe comments keyed by score values
+// Supports up to 3 variations per cache key for variety
+export const vibeCache = pgTable(
+  "vibe_cache",
+  {
+    id: serial("id").primaryKey(),
+    cacheKey: varchar("cache_key", { length: 255 }).notNull(),
+    variationIndex: integer("variation_index").notNull().default(0), // 0, 1, or 2
+    comment: text("comment").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    hitCount: integer("hit_count").default(0).notNull(),
+  },
+  (table) => [
+    uniqueIndex("vibe_cache_key_variation_idx").on(table.cacheKey, table.variationIndex),
+    index("vibe_cache_key_idx").on(table.cacheKey),
+  ]
+);
+
 // Rate limiting table - tracks API usage per IP
 export const rateLimits = pgTable(
   "rate_limits",
@@ -157,3 +175,6 @@ export type NewRateLimit = typeof rateLimits.$inferInsert;
 
 export type OverturePoi = typeof overturePois.$inferSelect;
 export type NewOverturePoi = typeof overturePois.$inferInsert;
+
+export type VibeCache = typeof vibeCache.$inferSelect;
+export type NewVibeCache = typeof vibeCache.$inferInsert;

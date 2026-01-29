@@ -6,6 +6,9 @@
     "retry": "Retry",
     "close": "Close"
   },
+  "header": {
+    "tagline": "Vibe check any spot on earth"
+  },
   "map": {
     "searchPlaceholder": "Search for an address...",
     "clickToScore": "Click anywhere on the map to see the infrastructure score",
@@ -14,8 +17,17 @@
     "myLocation": "My location",
     "toggleHeatmap": "Toggle heatmap"
   },
+  "hint": {
+    "title": "Click anywhere to see score",
+    "subtitle": "Discover infrastructure quality at any point"
+  },
+  "emptyState": {
+    "title": "Pick your spot",
+    "subtitle": "Tap anywhere to get the vibe",
+    "searchHint": "Or type an address to teleport there"
+  },
   "score": {
-    "title": "Infrastructure Score",
+    "title": "Vibe Score",
     "overall": "Overall Score",
     "calculating": "Calculating score...",
     "noData": "No data available for this location",
@@ -29,6 +41,16 @@
       "shopping": "Shopping",
       "entertainment": "Entertainment"
     },
+    "categoryDescriptions": {
+      "groceries": "Supermarkets, convenience stores within 800m",
+      "restaurants": "Restaurants, cafes, bars within 600m",
+      "transit": "Bus stops, train stations within 1km",
+      "healthcare": "Hospitals, clinics, pharmacies within 1.5km",
+      "education": "Schools, universities within 1.2km",
+      "parks": "Parks, playgrounds within 800m",
+      "shopping": "Retail stores, malls within 800m",
+      "entertainment": "Cinemas, theaters, gyms within 1.2km"
+    },
     "details": {
       "nearestDistance": "Nearest: {distance}m",
       "count": "{count} within {radius}m"
@@ -36,10 +58,58 @@
   },
   "city": {
     "exploreTitle": "Explore {city}",
-    "description": "Discover the infrastructure and walkability score of different areas in {city}"
+    "description": "Discover the infrastructure and walkability score of different areas in {city}",
+    "overallScore": "Overall Score",
+    "exploreMap": "Click the map to explore specific locations"
   },
   "meta": {
     "title": "NearbyIndex - Infrastructure Score for Any Location",
     "description": "Discover the infrastructure score and walkability of any location. Find areas with the best access to groceries, transit, healthcare, and more."
+  },
+  "share": {
+    "title": "Share This Location",
+    "shareScore": "Share Your Score",
+    "chooseStyle": "Choose Style",
+    "styles": {
+      "social": "Social",
+      "print": "Print",
+      "story": "Story",
+      "dark": "Dark"
+    },
+    "copyLink": "Copy Link",
+    "copied": "Copied!",
+    "download": "Download Image",
+    "downloadHint": "Perfect for printing or social media",
+    "nativeShare": "Share...",
+    "scanToView": "Scan to view this location",
+    "scoredBy": "Scored by nearbyindex.com"
+  },
+  "badges": {
+    "perfect_spot": "Perfect Spot",
+    "15min_hero": "15-Minute Hero",
+    "night_owl": "Night Owl",
+    "suburban_dream": "Suburban Dream",
+    "food_desert": "Food Desert Survivor",
+    "car_required": "Car Required",
+    "certified_chaos": "Certified Chaos",
+    "off_grid": "Off-Grid Legend",
+    "workaholic_zone": "Workaholic Zone",
+    "wellness_retreat": "Wellness Retreat"
+  },
+  "badge-descriptions": {
+    "perfect_spot": "The urban planning dream",
+    "15min_hero": "Everything walkable",
+    "night_owl": "Bars > groceries",
+    "suburban_dream": "Kids and dogs thrive here",
+    "food_desert": "Uber Eats MVP",
+    "car_required": "Transit? Never heard of it",
+    "certified_chaos": "Embrace the mess",
+    "off_grid": "Civilization is optional",
+    "workaholic_zone": "All work, no play",
+    "wellness_retreat": "Gyms and greens"
+  },
+  "vibe": {
+    "loading": "Reading the vibes...",
+    "error": "Vibes unclear. Try again later."
   }
 }
