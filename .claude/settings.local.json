@@ -56,7 +56,8 @@
       "Bash(npm run db:push:prod:*)",
       "Bash(xargs cat:*)",
       "Bash(test:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(readlink:*)"
     ]
   }
 }

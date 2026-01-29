@@ -61,6 +61,7 @@ COPY --from=builder /app/apps/web/scripts ./apps/web/scripts
 COPY --from=builder /app/apps/web/lib ./apps/web/lib
 COPY --from=builder /app/apps/web/tsconfig.json ./apps/web/tsconfig.json
 COPY --from=builder /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=builder /app/node_modules ./node_modules
 
 # Copy start script
 COPY --from=builder /app/apps/web/scripts/start.sh ./start.sh
