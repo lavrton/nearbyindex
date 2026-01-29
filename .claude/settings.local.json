@@ -55,7 +55,8 @@
       "Bash(npm run db:migrate:prod:*)",
       "Bash(npm run db:push:prod:*)",
       "Bash(xargs cat:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }
