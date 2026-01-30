@@ -6,7 +6,7 @@
  *
  * Environment variables:
  *   DATABASE_URL - Required
- *   WORKER_POLL_INTERVAL - Interval between job checks in ms (default: 60000 = 1 min)
+ *   WORKER_POLL_INTERVAL - Interval between job checks in ms (default: 2000 = 2 sec)
  *   WORKER_CHUNK_SIZE - Cells to process per iteration (default: 50)
  */
 
@@ -25,7 +25,7 @@ import {
 import { processHeatmapChunk } from "../lib/jobs/heatmap-processor";
 import { JOB_TYPES } from "../lib/jobs/types";
 
-const POLL_INTERVAL = parseInt(process.env.WORKER_POLL_INTERVAL || "60000", 10);
+const POLL_INTERVAL = parseInt(process.env.WORKER_POLL_INTERVAL || "2000", 10);
 const CHUNK_SIZE = parseInt(process.env.WORKER_CHUNK_SIZE || "50", 10);
 
 // Helper to format time

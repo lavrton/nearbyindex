@@ -31,12 +31,18 @@ function cellKey(lat: number, lng: number): string {
 
 // Score to color mapping: transparent → yellow → green
 function scoreToColor(score: number): string {
-  if (score < 30) return "rgba(0, 0, 0, 0)";               // Transparent - no overlay
+  // Low scores - transparent to warm colors
+  if (score < 30) return "rgba(0, 0, 0, 0)";               // Transparent
   if (score < 45) return "rgba(253, 224, 71, 0.15)";       // Yellow 300
   if (score < 60) return "rgba(190, 242, 100, 0.15)";      // Lime 300
-  if (score < 75) return "rgba(74, 222, 128, 0.18)";       // Green 400
-  if (score < 90) return "rgba(34, 197, 94, 0.2)";         // Green 500
-  return "rgba(21, 128, 61, 0.22)";                         // Green 700
+  if (score < 70) return "rgba(74, 222, 128, 0.18)";       // Green 400
+
+  // High scores (70-100) - expanded tiers for better differentiation
+  if (score < 78) return "rgba(34, 197, 94, 0.18)";        // Green 500 - Good
+  if (score < 85) return "rgba(22, 163, 74, 0.20)";        // Green 600 - Very Good
+  if (score < 92) return "rgba(21, 128, 61, 0.22)";        // Green 700 - Excellent
+  if (score < 97) return "rgba(22, 101, 52, 0.24)";        // Green 800 - Outstanding
+  return "rgba(20, 83, 45, 0.26)";                          // Green 900 - Exceptional
 }
 
 // Convert cells to GeoJSON polygons (rectangles)

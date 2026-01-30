@@ -168,7 +168,8 @@ function calculateSubTypeScore(
     return Math.round((countScore + distanceScore) * 0.4);
   }
 
-  return Math.min(100, Math.round(countScore + distanceScore + diversityBonus));
+  const rawScore = countScore + distanceScore + diversityBonus;
+  return compressScore(rawScore);
 }
 
 /** Standard scoring without sub-types */
@@ -205,7 +206,28 @@ function calculateSimpleScore(
     return Math.round((countScore + distanceScore) * 0.4);
   }
 
-  return Math.min(100, Math.round(countScore + distanceScore + densityBonus));
+  const rawScore = countScore + distanceScore + densityBonus;
+  return compressScore(rawScore);
+}
+
+/**
+ * Compress raw scores to 0-100 using exponential curve for values above 60.
+ * This makes it progressively harder to reach high scores, improving
+ * heatmap differentiation in high-density areas.
+ *
+ * Mapping examples:
+ * - Raw 60 → 60 (linear below threshold)
+ * - Raw 80 → 73
+ * - Raw 100 → 82
+ * - Raw 120 → 88
+ * - Raw 160 → 95
+ */
+function compressScore(rawScore: number): number {
+  if (rawScore <= 60) return rawScore;
+  // Exponential compression for scores above 60
+  // Makes it progressively harder to reach high scores
+  const compressed = 60 + 40 * (1 - Math.exp(-(rawScore - 60) / 50));
+  return Math.min(100, Math.round(compressed));
 }
 
 // Simplified score calculation for heatmap (groceries only)
