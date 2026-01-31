@@ -97,8 +97,28 @@ export async function GET(request: NextRequest) {
       cells = dbCells;
     }
 
-    // If no cells found, try to auto-schedule computation
-    if (cells.length === 0 && db) {
+    // Check if cells span the full viewport (not clustered in one area)
+    // Calculate the bounding box of existing cells and compare to viewport
+    let hasFullCoverage = false;
+    if (cells.length > 0) {
+      const cellMinLat = Math.min(...cells.map((c) => c.lat));
+      const cellMaxLat = Math.max(...cells.map((c) => c.lat));
+      const cellMinLng = Math.min(...cells.map((c) => c.lng));
+      const cellMaxLng = Math.max(...cells.map((c) => c.lng));
+
+      const viewportLatRange = maxLat - minLat;
+      const viewportLngRange = maxLng - minLng;
+      const cellLatRange = cellMaxLat - cellMinLat;
+      const cellLngRange = cellMaxLng - cellMinLng;
+
+      // Consider covered if cells span at least 50% of viewport in both dimensions
+      const latCoverage = viewportLatRange > 0 ? cellLatRange / viewportLatRange : 0;
+      const lngCoverage = viewportLngRange > 0 ? cellLngRange / viewportLngRange : 0;
+      hasFullCoverage = latCoverage >= 0.5 && lngCoverage >= 0.5;
+    }
+
+    // If viewport is not fully covered, try to auto-schedule computation
+    if (!hasFullCoverage && db) {
       let scheduleResult;
 
       if (citySlug) {
