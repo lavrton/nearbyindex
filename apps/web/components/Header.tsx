@@ -7,6 +7,7 @@ import { Search, X, Loader2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 interface SearchResult {
   display_name: string;
@@ -140,8 +141,10 @@ export function Header({ onSearchSelect }: HeaderProps) {
         )}
       </div>
 
-      {/* Spacer for balance */}
-      <div className="w-24 shrink-0 hidden md:block" />
+      {/* Language selector */}
+      <div className="shrink-0 hidden sm:block">
+        <LanguageSelector />
+      </div>
     </header>
   );
 }

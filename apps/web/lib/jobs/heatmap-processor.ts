@@ -1,6 +1,6 @@
 import { getDb } from "@/lib/db/client";
 import { heatCells, type Job } from "@/lib/db/schema";
-import { sql } from "drizzle-orm";
+import { sql, and, gte, lte, eq } from "drizzle-orm";
 import { calculateGroceryScore } from "@/lib/score/engine";
 import {
   updateJobProgress,
@@ -11,7 +11,7 @@ import type { HeatmapJobMetadata } from "./types";
 import { createBatchCalculator } from "./batch-score-calculator";
 
 const DEFAULT_CHUNK_SIZE = parseInt(process.env.HEATMAP_CHUNK_SIZE || "100", 10);
-const BATCH_SIZE = 50; // Large batches for local DB
+const BATCH_SIZE = 1000; // Large batches for fewer DB round-trips
 const BATCH_DELAY_MS = 0; // No delay needed for local DB
 
 // Cache for batch calculator (one per job bounds)
@@ -86,6 +86,50 @@ async function getBatchCalculator(bounds: HeatmapJobMetadata["bounds"]) {
 }
 
 /**
+ * Filter out points that already have computed cells in the database
+ */
+async function filterExistingCells(
+  points: Array<{ lat: number; lng: number; index: number }>,
+  gridStep: number
+): Promise<Array<{ lat: number; lng: number; index: number }>> {
+  if (points.length === 0) return points;
+
+  const database = getDb();
+
+  // Get bounds of this batch
+  const lats = points.map(p => p.lat);
+  const lngs = points.map(p => p.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+
+  // Query existing cells in this batch's bounds
+  const existingCells = await database
+    .select({ lat: heatCells.lat, lng: heatCells.lng })
+    .from(heatCells)
+    .where(
+      and(
+        gte(heatCells.lat, minLat - 0.0001),
+        lte(heatCells.lat, maxLat + 0.0001),
+        gte(heatCells.lng, minLng - 0.0001),
+        lte(heatCells.lng, maxLng + 0.0001),
+        eq(heatCells.gridStep, gridStep)
+      )
+    );
+
+  // Create lookup set (round to avoid floating point issues)
+  const existingSet = new Set(
+    existingCells.map(c => `${c.lat.toFixed(5)},${c.lng.toFixed(5)}`)
+  );
+
+  // Filter out existing points
+  return points.filter(p =>
+    !existingSet.has(`${p.lat.toFixed(5)},${p.lng.toFixed(5)}`)
+  );
+}
+
+/**
  * Process a chunk of heatmap cells for a job
  * Returns whether there is more work to do
  *
@@ -112,12 +156,24 @@ export async function processHeatmapChunk(
   const endIndex = Math.min(startIndex + chunkSize, allPoints.length);
   const pointsToProcess = allPoints.slice(startIndex, endIndex);
 
+  // Filter out cells that already exist in the database
+  const newPointsToProcess = await filterExistingCells(
+    pointsToProcess,
+    metadata.gridStep
+  );
+
+  // Log skip count
+  const skipped = pointsToProcess.length - newPointsToProcess.length;
+  if (skipped > 0) {
+    console.log(`Skipping ${skipped} existing cells`);
+  }
+
   let processed = 0;
   let errors = 0;
 
   // Process in batches - now purely CPU-bound, no DB queries per cell
-  for (let i = 0; i < pointsToProcess.length; i += BATCH_SIZE) {
-    const batch = pointsToProcess.slice(i, i + BATCH_SIZE);
+  for (let i = 0; i < newPointsToProcess.length; i += BATCH_SIZE) {
+    const batch = newPointsToProcess.slice(i, i + BATCH_SIZE);
 
     // Calculate scores in memory (no await needed - synchronous)
     const results = batch.map((point) => {
@@ -181,7 +237,7 @@ export async function processHeatmapChunk(
     }
 
     // Delay between batches (except for last batch)
-    if (i + BATCH_SIZE < pointsToProcess.length) {
+    if (i + BATCH_SIZE < newPointsToProcess.length) {
       await new Promise((resolve) => setTimeout(resolve, BATCH_DELAY_MS));
     }
   }

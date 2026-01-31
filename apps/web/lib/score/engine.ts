@@ -59,14 +59,15 @@ export async function calculateScore(
     });
   }
 
-  // Calculate overall score (weighted average)
+  // Calculate overall score (weighted average with compression)
   const totalWeight = categories.reduce((sum, c) => sum + c.weight, 0);
   const weightedSum = categoryResults.reduce((sum, result) => {
     const category = categories.find((c) => c.id === result.id)!;
     return sum + result.score * category.weight;
   }, 0);
 
-  const overall = Math.round(weightedSum / totalWeight);
+  // Apply compression to overall score too - makes 90-100 harder to achieve
+  const overall = compressScore(Math.round(weightedSum / totalWeight));
 
   return {
     lat,

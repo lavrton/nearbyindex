@@ -57,7 +57,8 @@
       "Bash(xargs cat:*)",
       "Bash(test:*)",
       "Bash(git checkout:*)",
-      "Bash(readlink:*)"
+      "Bash(readlink:*)",
+      "Bash(npx tsx:*)"
     ]
   }
 }

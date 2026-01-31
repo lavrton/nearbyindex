@@ -1,6 +1,6 @@
 import { db } from "@/lib/db/client";
 import { rateLimits } from "@/lib/db/schema";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { createHash } from "crypto";
 
 interface RateLimitConfig {
@@ -81,55 +81,35 @@ export async function checkRateLimit(
   const resetAt = new Date(windowStart.getTime() + limits.windowSeconds * 1000);
 
   try {
-    // Try to find existing record for this IP/endpoint/window
-    const existing = await db
-      .select()
-      .from(rateLimits)
-      .where(
-        and(
-          eq(rateLimits.ipHash, ipHash),
-          eq(rateLimits.endpoint, endpoint),
-          gte(rateLimits.windowStart, windowStart)
-        )
-      )
-      .limit(1);
+    // Upsert: insert or increment counter atomically to avoid race conditions
+    const result = await db
+      .insert(rateLimits)
+      .values({
+        ipHash,
+        endpoint,
+        requestCount: 1,
+        windowStart,
+      })
+      .onConflictDoUpdate({
+        target: [rateLimits.ipHash, rateLimits.endpoint, rateLimits.windowStart],
+        set: { requestCount: sql`${rateLimits.requestCount} + 1` },
+      })
+      .returning({ requestCount: rateLimits.requestCount });
 
-    if (existing.length > 0) {
-      const record = existing[0];
-      const remaining = Math.max(0, limits.maxRequests - record.requestCount);
+    const currentCount = result[0].requestCount;
+    const remaining = Math.max(0, limits.maxRequests - currentCount);
 
-      if (record.requestCount >= limits.maxRequests) {
-        return {
-          allowed: false,
-          remaining: 0,
-          resetAt,
-        };
-      }
-
-      // Increment the counter
-      await db
-        .update(rateLimits)
-        .set({ requestCount: sql`${rateLimits.requestCount} + 1` })
-        .where(eq(rateLimits.id, record.id));
-
+    if (currentCount > limits.maxRequests) {
       return {
-        allowed: true,
-        remaining: remaining - 1,
+        allowed: false,
+        remaining: 0,
         resetAt,
       };
     }
 
-    // Create new record
-    await db.insert(rateLimits).values({
-      ipHash,
-      endpoint,
-      requestCount: 1,
-      windowStart,
-    });
-
     return {
       allowed: true,
-      remaining: limits.maxRequests - 1,
+      remaining,
       resetAt,
     };
   } catch (error) {

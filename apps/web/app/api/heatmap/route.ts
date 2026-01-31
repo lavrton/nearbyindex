@@ -4,7 +4,7 @@ import { heatCells } from "@/lib/db/schema";
 import { and, gte, lte, eq, gt } from "drizzle-orm";
 import { checkRateLimit, getClientIP } from "@/lib/rate-limit";
 import { findCityForPoint, getCityBounds } from "@/lib/cities/bounds";
-import { scheduleHeatmapJob, getJobById } from "@/lib/jobs/scheduler";
+import { scheduleHeatmapJob, scheduleRegionalHeatmapJob, getJobById } from "@/lib/jobs/scheduler";
 import { HEATMAP_GRID_STEP } from "@/lib/constants";
 
 // Minimum score to return (cells below this are transparent on frontend anyway)
@@ -97,24 +97,28 @@ export async function GET(request: NextRequest) {
       cells = dbCells;
     }
 
-    // If no cells found and within a known city, try to auto-schedule computation
-    if (cells.length === 0 && db && citySlug) {
-      const cityBounds = getCityBounds(citySlug);
-      if (cityBounds) {
-        // Schedule the job
-        const scheduleResult = await scheduleHeatmapJob(
-          citySlug,
-          cityBounds
-        );
+    // If no cells found, try to auto-schedule computation
+    if (cells.length === 0 && db) {
+      let scheduleResult;
 
-        if (scheduleResult) {
-          const job = await getJobById(scheduleResult.jobId);
-          jobStatus = {
-            jobId: scheduleResult.jobId,
-            status: scheduleResult.status,
-            progress: job?.progress ?? null,
-          };
+      if (citySlug) {
+        // Known city - use full city bounds
+        const cityBounds = getCityBounds(citySlug);
+        if (cityBounds) {
+          scheduleResult = await scheduleHeatmapJob(citySlug, cityBounds);
         }
+      } else {
+        // Unknown area - create regional job around center
+        scheduleResult = await scheduleRegionalHeatmapJob(centerLat, centerLng);
+      }
+
+      if (scheduleResult) {
+        const job = await getJobById(scheduleResult.jobId);
+        jobStatus = {
+          jobId: scheduleResult.jobId,
+          status: scheduleResult.status,
+          progress: job?.progress ?? null,
+        };
       }
     }
 

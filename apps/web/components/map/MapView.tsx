@@ -6,7 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Layers, Minus, Plus, LocateFixed, X, MousePointer } from "lucide-react";
+import { Layers, Loader2, Minus, Plus, LocateFixed, X, MousePointer } from "lucide-react";
 import type { SelectedLocation, SelectedCategory } from "./MapContainer";
 import { HeatmapLayer } from "./HeatmapLayer";
 import { categoryColors } from "@/components/score/CategoryScore";
@@ -35,7 +35,9 @@ export function MapView({
   const marker = useRef<maplibregl.Marker | null>(null);
   const poiMarkers = useRef<maplibregl.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [heatmapLoading, setHeatmapLoading] = useState(false);
   const hasRequestedLocation = useRef(false);
+  const geocodeAbortControllerRef = useRef<AbortController | null>(null);
 
   // First-time hint state
   const [showHint, setShowHint] = useState(() => {
@@ -74,7 +76,8 @@ export function MapView({
       setMapLoaded(true);
 
       // Auto-detect user location on first load (instant, no animation)
-      if (!hasRequestedLocation.current && navigator.geolocation) {
+      // Skip if URL already has coordinates (e.g., shared location links)
+      if (!hasRequestedLocation.current && !window.__INITIAL_LOCATION__ && navigator.geolocation) {
         hasRequestedLocation.current = true;
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -111,8 +114,14 @@ export function MapView({
       // Set location immediately for fast UX
       onLocationSelect({ lat, lng });
 
+      // Cancel any previous in-flight geocode request
+      geocodeAbortControllerRef.current?.abort();
+      geocodeAbortControllerRef.current = new AbortController();
+
       // Fetch address in background via reverse geocoding
-      fetch(`/api/geocode/reverse?lat=${lat}&lng=${lng}`)
+      fetch(`/api/geocode/reverse?lat=${lat}&lng=${lng}`, {
+        signal: geocodeAbortControllerRef.current.signal,
+      })
         .then((res) => res.json())
         .then((data) => {
           if (data.displayName) {
@@ -121,6 +130,9 @@ export function MapView({
           }
         })
         .catch((err) => {
+          if (err?.name === "AbortError") {
+            return; // Silently ignore aborted requests
+          }
           // Silent fail - address is optional
           console.log("Reverse geocoding failed:", err);
         });
@@ -248,8 +260,14 @@ export function MapView({
         // Set location immediately
         onLocationSelect({ lat: latitude, lng: longitude });
 
+        // Cancel any previous in-flight geocode request
+        geocodeAbortControllerRef.current?.abort();
+        geocodeAbortControllerRef.current = new AbortController();
+
         // Fetch address in background
-        fetch(`/api/geocode/reverse?lat=${latitude}&lng=${longitude}`)
+        fetch(`/api/geocode/reverse?lat=${latitude}&lng=${longitude}`, {
+          signal: geocodeAbortControllerRef.current.signal,
+        })
           .then((res) => res.json())
           .then((data) => {
             if (data.displayName) {
@@ -257,6 +275,9 @@ export function MapView({
             }
           })
           .catch((err) => {
+            if (err?.name === "AbortError") {
+              return; // Silently ignore aborted requests
+            }
             console.log("Reverse geocoding failed:", err);
           });
       },
@@ -302,13 +323,21 @@ export function MapView({
           onClick={onToggleHeatmap}
           className={showHeatmap ? "" : "bg-background"}
         >
-          <Layers className="h-4 w-4" />
+          {heatmapLoading && showHeatmap ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Layers className="h-4 w-4" />
+          )}
         </Button>
       </div>
 
       {/* Heatmap Layer */}
       {mapLoaded && map.current && (
-        <HeatmapLayer map={map.current} visible={showHeatmap} />
+        <HeatmapLayer
+          map={map.current}
+          visible={showHeatmap}
+          onLoadingChange={setHeatmapLoading}
+        />
       )}
 
       {/* First-time hint overlay */}

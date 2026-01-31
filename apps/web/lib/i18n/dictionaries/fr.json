@@ -54,6 +54,10 @@
     "details": {
       "nearestDistance": "Le plus proche: {distance}m",
       "count": "{count} dans un rayon de {radius}m"
+    },
+    "disclaimer": {
+      "trigger": "Certaines données peuvent manquer. Cliquez pour signaler.",
+      "message": "Les données proviennent d'OpenStreetMap et peuvent être incomplètes. Pour signaler des problèmes, contactez"
     }
   },
   "city": {

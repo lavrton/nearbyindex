@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { useDebouncedCallback } from "use-debounce";
 import type { Map as MaplibreMap, GeoJSONSource } from "maplibre-gl";
 import { HEATMAP_GRID_STEP } from "@/lib/constants";
 
 interface HeatmapLayerProps {
   map: MaplibreMap;
   visible: boolean;
+  onLoadingChange?: (isLoading: boolean) => void;
 }
 
 interface HeatCell {
@@ -23,26 +25,31 @@ interface HeatmapData {
 const HEATMAP_SOURCE_ID = "heatmap-source";
 const HEATMAP_LAYER_ID = "heatmap-layer";
 const MAX_CACHED_CELLS = 100000; // Allow caching entire city (Cancun ~57k visible cells)
+const DEBOUNCE_MS = 1000;
 
 // Create a unique key for a cell based on its coordinates
 function cellKey(lat: number, lng: number): string {
   return `${lat.toFixed(6)},${lng.toFixed(6)}`;
 }
 
-// Score to color mapping: transparent → yellow → green
+// Score to color mapping: transparent → yellow → green → teal → purple
 function scoreToColor(score: number): string {
   // Low scores - transparent to warm colors
   if (score < 30) return "rgba(0, 0, 0, 0)";               // Transparent
-  if (score < 45) return "rgba(253, 224, 71, 0.15)";       // Yellow 300
-  if (score < 60) return "rgba(190, 242, 100, 0.15)";      // Lime 300
-  if (score < 70) return "rgba(74, 222, 128, 0.18)";       // Green 400
+  if (score < 45) return "rgba(253, 224, 71, 0.18)";       // Yellow - Low
+  if (score < 60) return "rgba(190, 242, 100, 0.20)";      // Lime - Below average
 
-  // High scores (70-100) - expanded tiers for better differentiation
-  if (score < 78) return "rgba(34, 197, 94, 0.18)";        // Green 500 - Good
-  if (score < 85) return "rgba(22, 163, 74, 0.20)";        // Green 600 - Very Good
-  if (score < 92) return "rgba(21, 128, 61, 0.22)";        // Green 700 - Excellent
-  if (score < 97) return "rgba(22, 101, 52, 0.24)";        // Green 800 - Outstanding
-  return "rgba(20, 83, 45, 0.26)";                          // Green 900 - Exceptional
+  // Medium scores - greens
+  if (score < 70) return "rgba(74, 222, 128, 0.22)";       // Green 400 - Average
+  if (score < 78) return "rgba(34, 197, 94, 0.25)";        // Green 500 - Good
+
+  // High scores - transition to teal/cyan
+  if (score < 84) return "rgba(20, 184, 166, 0.28)";       // Teal 500 - Very Good
+  if (score < 88) return "rgba(6, 182, 212, 0.32)";        // Cyan 500 - Great
+
+  // Top scores - purple tones
+  if (score < 92) return "rgba(139, 92, 246, 0.35)";       // Violet 500 - Excellent
+  return "rgba(168, 85, 247, 0.40)";                        // Purple 500 - Exceptional
 }
 
 // Convert cells to GeoJSON polygons (rectangles)
@@ -74,11 +81,17 @@ function createGeoJSON(
   };
 }
 
-export function HeatmapLayer({ map, visible }: HeatmapLayerProps) {
+export function HeatmapLayer({ map, visible, onLoadingChange }: HeatmapLayerProps) {
   const [data, setData] = useState<HeatmapData>({ cells: [], gridStep: HEATMAP_GRID_STEP });
+  const [isLoading, setIsLoading] = useState(false);
   const layerInitialized = useRef(false);
   const cellCache = useRef<Map<string, HeatCell>>(new Map());
   const currentGridStep = useRef<number>(HEATMAP_GRID_STEP);
+
+  // Optimization refs
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const lastBoundsRef = useRef<string | null>(null);
+  const isInitialLoadRef = useRef(true);
 
   // Merge new cells into cache and return merged result
   const mergeCells = useCallback((newCells: HeatCell[], gridStep: number): HeatCell[] => {
@@ -105,40 +118,95 @@ export function HeatmapLayer({ map, visible }: HeatmapLayerProps) {
     return Array.from(cellCache.current.values());
   }, []);
 
+  // Report loading state to parent
+  useEffect(() => {
+    onLoadingChange?.(isLoading);
+  }, [isLoading, onLoadingChange]);
+
+  // Core fetch logic
+  const executeFetch = useCallback(async () => {
+    // Cancel any previous in-flight request
+    abortControllerRef.current?.abort("new request");
+    abortControllerRef.current = new AbortController();
+
+    const bounds = map.getBounds();
+    // Add 50% padding on each side to preload data outside viewport
+    const latPadding = (bounds.getNorth() - bounds.getSouth()) * 0.5;
+    const lngPadding = (bounds.getEast() - bounds.getWest()) * 0.5;
+
+    const minLat = bounds.getSouth() - latPadding;
+    const maxLat = bounds.getNorth() + latPadding;
+    const minLng = bounds.getWest() - lngPadding;
+    const maxLng = bounds.getEast() + lngPadding;
+
+    // Skip if bounds haven't changed
+    const boundsKey = `${minLat.toFixed(4)},${maxLat.toFixed(4)},${minLng.toFixed(4)},${maxLng.toFixed(4)}`;
+    if (boundsKey === lastBoundsRef.current) {
+      return;
+    }
+    lastBoundsRef.current = boundsKey;
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        `/api/heatmap?minLat=${minLat}&maxLat=${maxLat}&minLng=${minLng}&maxLng=${maxLng}`,
+        { signal: abortControllerRef.current.signal }
+      );
+      if (response.ok) {
+        const heatData: HeatmapData = await response.json();
+        const mergedCells = mergeCells(heatData.cells, heatData.gridStep);
+        setData({ cells: mergedCells, gridStep: heatData.gridStep });
+      }
+    } catch (error) {
+      if ((error as Error)?.name === "AbortError") {
+        return; // Silently ignore aborted requests
+      }
+      console.error("Failed to fetch heatmap data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [map, mergeCells]);
+
+  // Debounced fetch for map movement
+  const debouncedFetch = useDebouncedCallback(executeFetch, DEBOUNCE_MS, {
+    leading: true,
+    trailing: true,
+  });
+
   // Fetch heatmap data with padding for smoother panning
   useEffect(() => {
     if (!visible) return;
 
-    const fetchHeatmapData = async () => {
-      try {
-        const bounds = map.getBounds();
-        // Add 50% padding on each side to preload data outside viewport
-        const latPadding = (bounds.getNorth() - bounds.getSouth()) * 0.5;
-        const lngPadding = (bounds.getEast() - bounds.getWest()) * 0.5;
+    // Reset state when visibility changes
+    lastBoundsRef.current = null;
+    isInitialLoadRef.current = true;
 
-        const response = await fetch(
-          `/api/heatmap?minLat=${bounds.getSouth() - latPadding}&maxLat=${bounds.getNorth() + latPadding}&minLng=${bounds.getWest() - lngPadding}&maxLng=${bounds.getEast() + lngPadding}`
-        );
-        if (response.ok) {
-          const heatData: HeatmapData = await response.json();
-          const mergedCells = mergeCells(heatData.cells, heatData.gridStep);
-          setData({ cells: mergedCells, gridStep: heatData.gridStep });
-        }
-      } catch (error) {
-        console.error("Failed to fetch heatmap data:", error);
-      }
+    // Fetch immediately on mount
+    executeFetch();
+
+    // Mark initial load complete after short delay to skip initial moveend
+    const initialLoadTimeout = setTimeout(() => {
+      isInitialLoadRef.current = false;
+    }, 100);
+
+    const onMoveEnd = () => {
+      // Skip initial moveend event fired during map setup
+      if (isInitialLoadRef.current) return;
+      debouncedFetch();
     };
 
-    fetchHeatmapData();
-
-    // Refetch on map move
-    const onMoveEnd = () => fetchHeatmapData();
     map.on("moveend", onMoveEnd);
 
     return () => {
-      map.off("moveend", onMoveEnd);
+      clearTimeout(initialLoadTimeout);
+      abortControllerRef.current?.abort();
+      debouncedFetch.cancel();
+      // Guard against map being destroyed during navigation
+      if (map.getStyle()) {
+        map.off("moveend", onMoveEnd);
+      }
     };
-  }, [map, visible, mergeCells]);
+  }, [map, visible, executeFetch, debouncedFetch]);
 
   // Initialize layer once when visible becomes true
   useEffect(() => {
@@ -189,6 +257,9 @@ export function HeatmapLayer({ map, visible }: HeatmapLayerProps) {
     }
 
     return () => {
+      // Guard against map being destroyed during navigation
+      if (!map.getStyle()) return;
+
       if (map.getLayer(HEATMAP_LAYER_ID)) {
         map.removeLayer(HEATMAP_LAYER_ID);
       }

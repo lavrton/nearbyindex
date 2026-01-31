@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { X, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ export function ScorePanel({
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [vibeComment, setVibeComment] = useState<string | null>(null);
   const [vibeLoading, setVibeLoading] = useState(false);
+  const [disclaimerExpanded, setDisclaimerExpanded] = useState(false);
 
   // Evaluate badge when score changes
   const badge = useMemo(() => {
@@ -46,13 +47,22 @@ export function ScorePanel({
     return evaluateBadge(score);
   }, [score]);
 
+  // AbortController refs to cancel in-flight requests
+  const scoreAbortControllerRef = useRef<AbortController | null>(null);
+  const vibeAbortControllerRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
+    // Cancel any previous in-flight request
+    scoreAbortControllerRef.current?.abort();
+
     if (!location) {
       setScore(null);
       setIsLoading(false);
       setVibeComment(null);
       return;
     }
+
+    scoreAbortControllerRef.current = new AbortController();
 
     const fetchScore = async () => {
       setIsLoading(true);
@@ -61,7 +71,8 @@ export function ScorePanel({
 
       try {
         const response = await fetch(
-          `/api/score?lat=${location.lat}&lng=${location.lng}`
+          `/api/score?lat=${location.lat}&lng=${location.lng}`,
+          { signal: scoreAbortControllerRef.current!.signal }
         );
 
         if (!response.ok) {
@@ -70,24 +81,40 @@ export function ScorePanel({
 
         const data = await response.json();
         setScore(data);
+        setIsLoading(false);
       } catch (err) {
+        if ((err as Error)?.name === "AbortError") {
+          return; // Silently ignore aborted requests - don't touch loading state
+        }
         setError(err instanceof Error ? err.message : "Unknown error");
-      } finally {
         setIsLoading(false);
       }
     };
 
     fetchScore();
+
+    return () => {
+      scoreAbortControllerRef.current?.abort();
+    };
     // Only refetch when coordinates change, not when address is added
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location?.lat, location?.lng]);
 
   // Fetch vibe comment when score is available
   useEffect(() => {
-    if (!score) return;
+    // Cancel any previous in-flight vibe request
+    vibeAbortControllerRef.current?.abort();
+
+    if (!score) {
+      setVibeLoading(false);
+      return;
+    }
+
+    // Set loading immediately so UI shows loading state
+    setVibeLoading(true);
+    vibeAbortControllerRef.current = new AbortController();
 
     const fetchVibe = async () => {
-      setVibeLoading(true);
       try {
         const response = await fetch("/api/vibe", {
           method: "POST",
@@ -100,22 +127,29 @@ export function ScorePanel({
             })),
             locale,
           }),
+          signal: vibeAbortControllerRef.current!.signal,
         });
 
         const data = await response.json();
         // Handle both success and fallback responses
         setVibeComment(data.comment || data.fallback || null);
-      } catch (err) {
-        console.error("Vibe fetch error:", err);
-        // Silent fail - vibe is optional
-      } finally {
         setVibeLoading(false);
+      } catch (err) {
+        if ((err as Error)?.name === "AbortError") {
+          return; // Silently ignore aborted requests - don't touch loading state
+        }
+        console.error("Vibe fetch error:", err);
+        setVibeLoading(false);
+        // Silent fail - vibe is optional
       }
     };
 
     // Add a small delay to not compete with score rendering
     const timeout = setTimeout(fetchVibe, 100);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      vibeAbortControllerRef.current?.abort();
+    };
   }, [score, locale]);
 
   // Empty state when no location selected
@@ -216,6 +250,29 @@ export function ScorePanel({
                   onClick={() => setShareModalOpen(true)}
                   score={score.overall}
                 />
+              </div>
+
+              {/* Disclaimer */}
+              <div className="pt-2 mt-1">
+                <button
+                  onClick={() => setDisclaimerExpanded(!disclaimerExpanded)}
+                  className="text-[10px] text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors"
+                >
+                  {t("disclaimer.trigger")}
+                </button>
+                {disclaimerExpanded && (
+                  <p className="text-[10px] text-muted-foreground/50 mt-1">
+                    {t("disclaimer.message")}{" "}
+                    <a
+                      href="https://x.com/lavrton"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-muted-foreground"
+                    >
+                      @lavrton
+                    </a>
+                  </p>
+                )}
               </div>
             </div>
           ) : (

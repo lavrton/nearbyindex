@@ -82,3 +82,44 @@ export function overtureCategoryToOsmTag(
   }
   return null;
 }
+
+// Maps our category IDs to their OSM tag prefixes
+const CATEGORY_TAG_PREFIXES: Record<string, string[]> = {
+  groceries: ["shop=supermarket", "shop=convenience", "shop=grocery", "shop=greengrocer"],
+  restaurants: ["amenity=restaurant", "amenity=cafe", "amenity=fast_food", "amenity=bar"],
+  parks: ["leisure=park", "leisure=playground", "leisure=garden", "leisure=sports_centre", "leisure=fitness_centre"],
+  transit: ["railway=station", "railway=halt", "railway=tram_stop", "amenity=bus_station", "highway=bus_stop", "public_transport=stop_position", "public_transport=platform"],
+  healthcare: ["amenity=hospital", "amenity=clinic", "amenity=pharmacy", "amenity=doctors", "amenity=dentist"],
+  education: ["amenity=school", "amenity=kindergarten", "amenity=university", "amenity=college", "amenity=library"],
+  shopping: ["shop=mall", "shop=clothes", "shop=shoes", "shop=department_store", "shop=electronics"],
+  entertainment: ["amenity=cinema", "amenity=theatre", "amenity=nightclub", "leisure=bowling_alley", "tourism=museum"],
+};
+
+// Build reverse mapping: overture category → our category ID
+const OVERTURE_TO_CATEGORY_ID: Record<string, string> = {};
+for (const [categoryId, tags] of Object.entries(CATEGORY_TAG_PREFIXES)) {
+  for (const tag of tags) {
+    const overtureCategories = OSM_TO_OVERTURE[tag] || [];
+    for (const oc of overtureCategories) {
+      OVERTURE_TO_CATEGORY_ID[oc] = categoryId;
+    }
+  }
+}
+
+/** Maps an Overture category to our category ID (groceries, restaurants, etc.) */
+export function overtureCategoryToCategoryId(overtureCategory: string): string | null {
+  return OVERTURE_TO_CATEGORY_ID[overtureCategory] || null;
+}
+
+/** Get all Overture categories for a list of our category IDs */
+export function categoryIdsToOvertureCategories(categoryIds: string[]): string[] {
+  const result: string[] = [];
+  for (const categoryId of categoryIds) {
+    const tags = CATEGORY_TAG_PREFIXES[categoryId] || [];
+    for (const tag of tags) {
+      const overtureCategories = OSM_TO_OVERTURE[tag] || [];
+      result.push(...overtureCategories);
+    }
+  }
+  return [...new Set(result)]; // dedupe
+}

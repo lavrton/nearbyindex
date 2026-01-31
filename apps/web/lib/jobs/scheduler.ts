@@ -1,12 +1,12 @@
 import { getDb } from "@/lib/db/client";
-import { jobs, cities, heatCells } from "@/lib/db/schema";
+import { jobs, cities, heatCells, overturePois } from "@/lib/db/schema";
 import { eq, and, lt, asc, sql, or, gte, lte } from "drizzle-orm";
 import { JOB_TYPES, JOB_STATUS, type HeatmapJobMetadata } from "./types";
 import { getCityBounds, type CityBounds } from "@/lib/cities/bounds";
 import { HEATMAP_GRID_STEP } from "@/lib/constants";
 const REGION_SIZE = 0.15; // ~15km region for auto-scheduled jobs
 const STALE_JOB_MINUTES = 10;
-const MAX_CONCURRENT_JOBS = parseInt(process.env.MAX_CONCURRENT_JOBS || "1", 10);
+const MAX_CONCURRENT_JOBS = parseInt(process.env.MAX_CONCURRENT_JOBS || "4", 10);
 
 export interface ScheduleResult {
   jobId: number;
@@ -152,6 +152,40 @@ export async function getRunningJob() {
     .limit(1);
 
   return job ?? null;
+}
+
+/**
+ * Get all currently running jobs
+ */
+export async function getAllRunningJobs() {
+  const database = getDb();
+
+  return database
+    .select()
+    .from(jobs)
+    .where(eq(jobs.status, JOB_STATUS.RUNNING))
+    .orderBy(asc(jobs.startedAt));
+}
+
+/**
+ * Get multiple pending jobs (oldest first)
+ */
+export async function getNextPendingJobs(limit: number) {
+  const database = getDb();
+
+  return database
+    .select()
+    .from(jobs)
+    .where(eq(jobs.status, JOB_STATUS.PENDING))
+    .orderBy(asc(jobs.createdAt))
+    .limit(limit);
+}
+
+/**
+ * Get max concurrent jobs setting
+ */
+export function getMaxConcurrentJobs(): number {
+  return MAX_CONCURRENT_JOBS;
 }
 
 /**
@@ -302,6 +336,32 @@ export async function hasHeatmapCoverage(
 }
 
 /**
+ * Check if there are any POIs in a region
+ */
+async function hasPoisInRegion(
+  lat: number,
+  lng: number,
+  radiusDegrees: number = REGION_SIZE / 2
+): Promise<boolean> {
+  const database = getDb();
+
+  const [result] = await database
+    .select({ count: sql<number>`count(*)` })
+    .from(overturePois)
+    .where(
+      and(
+        gte(overturePois.lat, lat - radiusDegrees),
+        lte(overturePois.lat, lat + radiusDegrees),
+        gte(overturePois.lng, lng - radiusDegrees),
+        lte(overturePois.lng, lng + radiusDegrees)
+      )
+    )
+    .limit(1);
+
+  return Number(result?.count ?? 0) > 0;
+}
+
+/**
  * Check if there's already a pending/running job that covers a point
  */
 async function hasOverlappingJob(lat: number, lng: number): Promise<boolean> {
@@ -344,6 +404,14 @@ export async function scheduleRegionalHeatmapJob(
 
   // Check if there's already a job covering this area
   if (await hasOverlappingJob(lat, lng)) {
+    return null;
+  }
+
+  // Skip remote areas with no POIs (oceans, deserts, etc.)
+  if (!(await hasPoisInRegion(lat, lng))) {
+    console.log(
+      `[auto-schedule] Skipped remote area (${lat.toFixed(4)}, ${lng.toFixed(4)}) - no POIs found`
+    );
     return null;
   }
 

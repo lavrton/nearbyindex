@@ -54,6 +54,10 @@
     "details": {
       "nearestDistance": "Nächste: {distance}m",
       "count": "{count} innerhalb von {radius}m"
+    },
+    "disclaimer": {
+      "trigger": "Einige Daten fehlen möglicherweise. Klicken zum Melden.",
+      "message": "Daten stammen von OpenStreetMap und können unvollständig sein. Um Probleme zu melden, kontaktiere"
     }
   },
   "city": {
